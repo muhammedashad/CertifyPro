@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CertifyPro - Enterprise Certificate Generator</title>
+    <!-- Google Fonts for Premium UI and Certificates -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <!-- FontAwesome 6 for modern icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Vendor scripts loaded from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="vendor/joystick.js"></script>
+    <link rel="stylesheet" href="assets/style.css" />
+  </head>
+  <body>
+    <!-- Premium Top Navigation Bar -->
+    <header class="top-nav">
+      <div class="nav-left">
+        <div class="logo-area">
+          <div class="logo-icon">
+            <i class="fa-solid fa-award"></i>
+          </div>
+          <div class="logo-text">
+            <span class="brand-name">CertifyPro</span>
+            <span class="badge-premium">Enterprise</span>
+          </div>
+        </div>
+        <div class="project-name-wrapper">
+          <input type="text" id="project-title" value="Untitled Certificate Project" title="Click to rename project" />
+          <i class="fa-solid fa-pen edit-icon"></i>
+        </div>
+      </div>
+
+      <div class="nav-center">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="global-search" placeholder="Search templates, layers..." />
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <!-- Quick History Buttons -->
+        <div class="history-actions">
+          <button id="btn-undo" class="nav-icon-btn" title="Undo (Ctrl+Z)" disabled>
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+          <button id="btn-redo" class="nav-icon-btn" title="Redo (Ctrl+Y)" disabled>
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+        </div>
+
+        <button id="btn-shortcuts-toggle" class="nav-icon-btn" title="Keyboard Shortcuts">
+          <i class="fa-solid fa-keyboard"></i>
+        </button>
+
+        <button id="theme-toggle" class="theme-btn" title="Toggle Theme (Dark/Light)">
+          <i class="fa-solid fa-moon dark-icon"></i>
+          <i class="fa-solid fa-sun light-icon"></i>
+        </button>
+
+        <div class="notifications-dropdown-wrapper">
+          <button id="notifications-btn" class="nav-icon-btn" title="Notifications">
+            <i class="fa-solid fa-bell"></i>
+            <span class="notification-badge" id="notification-count">0</span>
+          </button>
+          <div class="notifications-menu" id="notifications-menu">
+            <div class="notifications-header">
+              <h3>Notifications</h3>
+              <button id="clear-notifications">Clear All</button>
+            </div>
+            <div class="notifications-list" id="notifications-list">
+              <div class="no-notifications">No new notifications</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="user-profile">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="User Avatar" class="profile-avatar" />
+          <div class="profile-info">
+            <span class="user-name">Muhammed Ashad K</span>
+            <span class="user-role">SaaS Architect</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Setup -->
+    <div class="app-layout">
+      <!-- Sidebar Control Panel -->
+      <aside class="sidebar collapsible" id="app-sidebar">
+        <div class="sidebar-tabs">
+          <button class="tab-btn active" data-tab="templates" title="Templates">
+            <i class="fa-solid fa-rectangle-list"></i>
+            <span>Templates</span>
+          </button>
+          <button class="tab-btn" data-tab="text" title="Text Layers">
+            <i class="fa-solid fa-font"></i>
+            <span>Text</span>
+          </button>
+          <button class="tab-btn" data-tab="images" title="Images & Seals">
+            <i class="fa-solid fa-image"></i>
+            <span>Graphics</span>
+          </button>
+          <button class="tab-btn" data-tab="brand" title="Brand Kit">
+            <i class="fa-solid fa-palette"></i>
+            <span>Brand</span>
+          </button>
+          <button class="tab-btn" data-tab="data" title="Data Import">
+            <i class="fa-solid fa-file-excel"></i>
+            <span>Import</span>
+          </button>
+          <button class="tab-btn" data-tab="settings" title="Project Settings">
+            <i class="fa-solid fa-sliders"></i>
+            <span>Settings</span>
+          </button>
+        </div>
+
+        <div class="sidebar-content">
+          <!-- Templates Section -->
+          <div class="tab-pane active" id="pane-templates">
+            <div class="pane-header">
+              <h2>Certificate Templates</h2>
+              <p>Select a pre-designed premium certificate style</p>
+            </div>
+            <div class="template-grid" id="template-library-container">
+              <!-- Templates added programmatically -->
+            </div>
+          </div>
+
+          <!-- Text Layers Section -->
+          <div class="tab-pane" id="pane-text">
+            <div class="pane-header">
+              <h2>Add Text</h2>
+              <p>Insert highly styled typographic elements</p>
+            </div>
+            <div class="text-addition-buttons">
+              <button id="add-heading-btn" class="btn btn-secondary text-preset-btn font-heading">
+                <i class="fa-solid fa-plus"></i> Add Heading
+              </button>
+              <button id="add-subheading-btn" class="btn btn-secondary text-preset-btn font-subheading">
+                <i class="fa-solid fa-plus"></i> Add Subheading
+              </button>
+              <button id="add-body-btn" class="btn btn-secondary text-preset-btn font-body">
+                <i class="fa-solid fa-plus"></i> Add Body Text
+              </button>
+            </div>
+            <div class="pane-separator"></div>
+            <div class="pane-header">
+              <h2>Layer Manager</h2>
+              <p>Reorder, toggle visibility, or delete text items</p>
+            </div>
+            <div class="layers-list" id="layers-list-container">
+              <!-- Layers dynamic items -->
+              <div class="empty-state">No active text layers. Add one above!</div>
+            </div>
+          </div>
+
+          <!-- Images & Logos Section -->
+          <div class="tab-pane" id="pane-images">
+            <div class="pane-header">
+              <h2>Certificate Background</h2>
+              <p>Upload your own high-resolution template image</p>
+            </div>
+            <div class="drag-upload-container" id="bg-drag-zone">
+              <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+              <p class="upload-text">Drag & drop certificate image or <span>Browse</span></p>
+              <p class="upload-hint">Supports JPEG, PNG up to 10MB</p>
+              <input type="file" id="upload-bg-input" accept="image/*" />
+            </div>
+            
+            <div class="pane-separator"></div>
+            
+            <div class="pane-header">
+              <h2>Signatures & Seals</h2>
+              <p>Select decorative elements for validation</p>
+            </div>
+            <div class="decorations-list">
+              <div class="decoration-item" data-type="gold_seal" title="Gold Seal Accent">
+                <div class="dec-preview gold-seal-preview"></div>
+                <span>Premium Gold Seal</span>
+              </div>
+              <div class="decoration-item" data-type="signature_line" title="Signature Line Placement">
+                <div class="dec-preview signature-preview"></div>
+                <span>Signature Line</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Brand Kit Section -->
+          <div class="tab-pane" id="pane-brand">
+            <div class="pane-header">
+              <h2>Brand Palettes</h2>
+              <p>Instantly apply harmonic colors to text layers</p>
+            </div>
+            <div class="brand-palettes-container" id="brand-palettes">
+              <!-- Built-in palettes -->
+            </div>
+            <div class="pane-separator"></div>
+            <div class="pane-header">
+              <h2>Default Typography</h2>
+              <p>Configure project-wide typography rules</p>
+            </div>
+            <div class="brand-presets">
+              <button class="preset-typography-btn" data-theme="classic">
+                <span class="title">Classic Academy</span>
+                <span class="preview">Cinzel / Playfair Display</span>
+              </button>
+              <button class="preset-typography-btn" data-theme="corporate">
+                <span class="title">Corporate Modern</span>
+                <span class="preview">Outfit / Montserrat</span>
+              </button>
+              <button class="preset-typography-btn" data-theme="minimalist">
+                <span class="title">Creative Minimal</span>
+                <span class="preview">Inter / Montserrat</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Data Import Section -->
+          <div class="tab-pane" id="pane-data">
+            <div class="pane-header">
+              <h2>Data Source Import</h2>
+              <p>Upload a CSV or Excel sheet to generate certificates in bulk</p>
+            </div>
+            
+            <div class="drag-upload-container" id="csv-drag-zone">
+              <i class="fa-solid fa-file-csv upload-icon"></i>
+              <p class="upload-text">Drag & drop CSV / Excel or <span>Browse</span></p>
+              <p class="upload-hint">Supports .csv, .xlsx, .xls</p>
+              <input type="file" id="uploadcsv" accept=".csv, .xlsx, .xls" />
+            </div>
+
+            <div class="data-source-status" id="data-source-status" style="display: none;">
+              <div class="status-success-badge">
+                <i class="fa-solid fa-circle-check"></i>
+                <span id="data-file-name">students.csv</span>
+              </div>
+              <button id="btn-remove-data" class="btn-text-danger" title="Remove Data Source">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+
+            <div id="data-mapping-section" style="display: none;">
+              <div class="pane-separator"></div>
+              <div class="pane-header">
+                <h2>Field Mapping</h2>
+                <p>Link placeholders on canvas with sheet columns</p>
+              </div>
+              <div class="mapping-table" id="mapping-fields-container">
+                <!-- dynamic mappings -->
+              </div>
+
+              <div class="pane-separator"></div>
+              <div class="pane-header">
+                <h2>Data Preview</h2>
+                <p>Select a row to preview on the canvas</p>
+              </div>
+              <div class="data-preview-table-wrapper">
+                <table class="data-preview-table" id="data-preview-table">
+                  <thead>
+                    <tr id="data-preview-header">
+                      <!-- headers -->
+                    </tr>
+                  </thead>
+                  <tbody id="data-preview-body">
+                    <!-- rows -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="pane-separator"></div>
+              <button id="btn-open-bulk-dashboard" class="btn btn-primary btn-full">
+                <i class="fa-solid fa-gears"></i> Open Bulk Dashboard
+              </button>
+            </div>
+          </div>
+
+          <!-- Settings Section -->
+          <div class="tab-pane" id="pane-settings">
+            <div class="pane-header">
+              <h2>Canvas Settings</h2>
+              <p>Adjust sizing, layouts and export options</p>
+            </div>
+            
+            <div class="settings-group">
+              <label class="settings-label">Grid Overlay</label>
+              <div class="toggle-control">
+                <span class="toggle-desc">Show Grid Layout</span>
+                <label class="switch">
+                  <input type="checkbox" id="setting-show-grid" />
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+              <div class="toggle-control">
+                <span class="toggle-desc">Snap elements to Grid</span>
+                <label class="switch">
+                  <input type="checkbox" id="setting-snap-grid" checked />
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+              <div class="input-inline-group">
+                <label for="setting-grid-size">Grid Size (px):</label>
+                <input type="number" id="setting-grid-size" value="20" min="5" max="100" />
+              </div>
+            </div>
+
+            <div class="pane-separator"></div>
+            
+            <div class="settings-group">
+              <label class="settings-label">Global Export Preset</label>
+              <div class="setting-item-select">
+                <span class="select-label">Export Format</span>
+                <select id="downloadtype">
+                  <option value="png" selected>PNG (Lossless Image)</option>
+                  <option value="jpg">JPG (Compressed Image)</option>
+                  <option value="pdf">PDF (Landscape Standard)</option>
+                </select>
+              </div>
+              <div class="setting-item-select">
+                <span class="select-label">Resolution Scaler</span>
+                <select id="export-resolution">
+                  <option value="1">1x (Web Quality - 72 DPI)</option>
+                  <option value="2">2x (Retina Display - 150 DPI)</option>
+                  <option value="3" selected>3x (Print Quality - 300 DPI equivalent)</option>
+                </select>
+              </div>
+              <div class="setting-item-select" id="jpeg-quality-wrapper" style="display: none;">
+                <span class="select-label">Image Compression</span>
+                <select id="export-compression">
+                  <option value="1">Lossless / 100% Quality</option>
+                  <option value="0.95" selected>High / 95% Quality</option>
+                  <option value="0.85">Medium / 85% Quality</option>
+                  <option value="0.7">Low / 70% Quality</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="pane-separator"></div>
+
+            <!-- Legacy Joystick Toggle -->
+            <div class="settings-group">
+              <label class="settings-label">Accessibilty Controls</label>
+              <div class="toggle-control">
+                <span class="toggle-desc">Show Position Joystick</span>
+                <label class="switch">
+                  <input type="checkbox" id="setting-show-joystick" />
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+              
+              <!-- Legacy Joystick Section (Collapsible) -->
+              <div class="joystick-control-section" id="joystick-ui-container" style="display: none;">
+                <p class="joystick-hint">Use joystick to nudge text positioning</p>
+                <div class="joystick-wrapper">
+                  <div id="joystick-container">
+                    <img src="https://www.cssscript.com/demo/touch-joystick-controller/images/joystick-base.png" alt="Joystick Base" />
+                    <div id="stick">
+                      <img src="https://www.cssscript.com/demo/touch-joystick-controller/images/joystick-red.png" alt="Joystick Red" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Workspace Panel -->
+      <main class="workspace-area">
+        <!-- Canvas Toolbar -->
+        <div class="workspace-toolbar">
+          <div class="toolbar-left">
+            <button id="btn-collapse-sidebar" class="toolbar-btn" title="Collapse Sidebar">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <span class="divider"></span>
+            <button id="btn-fit-screen" class="toolbar-btn" title="Fit Canvas to Screen">
+              <i class="fa-solid fa-expand"></i>
+            </button>
+            <button id="btn-zoom-out" class="toolbar-btn" title="Zoom Out">
+              <i class="fa-solid fa-minus"></i>
+            </button>
+            <div class="zoom-indicator">
+              <span id="zoom-percentage">100%</span>
+            </div>
+            <button id="btn-zoom-in" class="toolbar-btn" title="Zoom In">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+
+          <div class="toolbar-center">
+            <div class="alignment-helpers">
+              <button id="btn-align-left" class="toolbar-btn" title="Align Left">
+                <i class="fa-solid fa-align-left"></i>
+              </button>
+              <button id="btn-align-center" class="toolbar-btn" title="Align Center">
+                <i class="fa-solid fa-align-center"></i>
+              </button>
+              <button id="btn-align-right" class="toolbar-btn" title="Align Right">
+                <i class="fa-solid fa-align-right"></i>
+              </button>
+              <span class="divider"></span>
+              <button id="btn-distribute-h" class="toolbar-btn" title="Center Horizontally in Canvas">
+                <i class="fa-solid fa-arrows-left-right"></i>
+              </button>
+              <button id="btn-distribute-v" class="toolbar-btn" title="Center Vertically in Canvas">
+                <i class="fa-solid fa-arrows-up-down"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="toolbar-right">
+            <button id="btn-download-single" class="btn btn-primary">
+              <i class="fa-solid fa-download"></i> Export Single
+            </button>
+          </div>
+        </div>
+
+        <!-- Canvas Container Area -->
+        <div class="canvas-scroll-container" id="canvas-scroll-area">
+          <div class="canvas-viewport" id="canvas-viewport">
+            <div class="ruler ruler-h" id="ruler-horizontal"></div>
+            <div class="ruler ruler-v" id="ruler-vertical"></div>
+            
+            <div class="canvas-wrapper-outer">
+              <div id="certificatediv">
+                <canvas id="certificatecanvas"></canvas>
+                <!-- Selection Overlay containing bounding box coordinates dynamically positioned -->
+                <div class="selection-overlay" id="selection-bounding-box" style="display: none;">
+                  <div class="handle top-left"></div>
+                  <div class="handle top-right"></div>
+                  <div class="handle bottom-left"></div>
+                  <div class="handle bottom-right"></div>
+                  <div class="rotation-handle"><i class="fa-solid fa-arrows-spin"></i></div>
+                </div>
+                <!-- Alignment Guide Lines -->
+                <div class="alignment-guide guide-h" id="guide-horizontal" style="display: none;"></div>
+                <div class="alignment-guide guide-v" id="guide-vertical" style="display: none;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Right Properties Panel -->
+      <aside class="property-panel" id="right-property-panel">
+        <div class="panel-header">
+          <h2>Inspector</h2>
+          <span class="selected-layer-type" id="layer-type-label">No Selection</span>
+        </div>
+
+        <!-- Empty State Property view -->
+        <div class="properties-empty-state" id="properties-empty">
+          <i class="fa-solid fa-arrow-pointer empty-icon"></i>
+          <p>Select a canvas layer to adjust typography, colors, shadows, and precise alignments.</p>
+        </div>
+
+        <!-- Active text settings form -->
+        <div class="properties-content" id="properties-active" style="display: none;">
+          <!-- Section 1: Text content editing -->
+          <div class="property-section">
+            <label class="section-label">Layer Text Content</label>
+            <div class="input-wrapper">
+              <textarea id="prop-text-val" rows="2" placeholder="Enter custom text..."></textarea>
+            </div>
+          </div>
+
+          <!-- Section 2: Position & Alignment -->
+          <div class="property-section">
+            <label class="section-label">Layout & Position</label>
+            <div class="position-grid">
+              <div class="coord-field">
+                <span class="coord-lbl">X (%)</span>
+                <input type="number" id="prop-pos-x" step="0.1" min="0" max="100" />
+              </div>
+              <div class="coord-field">
+                <span class="coord-lbl">Y (%)</span>
+                <input type="number" id="prop-pos-y" step="0.1" min="0" max="100" />
+              </div>
+            </div>
+            <div class="alignment-actions">
+              <button id="prop-align-left" class="prop-align-btn" title="Left Align"><i class="fa-solid fa-align-left"></i></button>
+              <button id="prop-align-center" class="prop-align-btn" title="Center Align"><i class="fa-solid fa-align-center"></i></button>
+              <button id="prop-align-right" class="prop-align-btn" title="Right Align"><i class="fa-solid fa-align-right"></i></button>
+            </div>
+          </div>
+
+          <!-- Section 3: Typography -->
+          <div class="property-section">
+            <label class="section-label">Typography</label>
+            <div class="property-item">
+              <span class="item-label">Font Family</span>
+              <select id="prop-font-family">
+                <option value="Inter">Inter (SaaS UI)</option>
+                <option value="Outfit">Outfit (Modern Tech)</option>
+                <option value="Montserrat">Montserrat (Geometric)</option>
+                <option value="Playfair Display">Playfair Display (Serif)</option>
+                <option value="Cinzel">Cinzel (Diplomatic Serif)</option>
+                <option value="Alex Brush">Alex Brush (Calligraphy)</option>
+                <option value="Arial">Arial (Standard)</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Courier New">Monospace (Code)</option>
+              </select>
+            </div>
+            <div class="typography-grid">
+              <div class="prop-item-small">
+                <span class="item-label">Font Size (x)</span>
+                <input type="number" id="prop-font-size" min="0.5" max="30" step="0.1" />
+              </div>
+              <div class="prop-item-small">
+                <span class="item-label">Opacity</span>
+                <input type="number" id="prop-opacity" min="0" max="100" step="5" />
+              </div>
+            </div>
+            <div class="style-toggle-buttons">
+              <button id="prop-btn-bold" class="toggle-btn" title="Toggle Bold"><i class="fa-solid fa-bold"></i></button>
+              <button id="prop-btn-italic" class="toggle-btn" title="Toggle Italic"><i class="fa-solid fa-italic"></i></button>
+            </div>
+            <div class="typography-grid" style="margin-top: 10px;">
+              <div class="prop-item-small">
+                <span class="item-label">Letter Spacing</span>
+                <input type="number" id="prop-letter-spacing" min="-10" max="50" step="1" value="0" />
+              </div>
+              <div class="prop-item-small">
+                <span class="item-label">Line Height</span>
+                <input type="number" id="prop-line-height" min="0.5" max="5.0" step="0.1" value="1.2" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Colors & Gradients -->
+          <div class="property-section">
+            <label class="section-label">Colors & Styling</label>
+            <div class="color-type-select">
+              <button class="color-mode-btn active" id="color-mode-solid">Solid</button>
+              <button class="color-mode-btn" id="color-mode-gradient">Gradient</button>
+            </div>
+            
+            <div class="solid-color-controls" id="solid-color-view">
+              <div class="color-picker-wrapper">
+                <input type="color" id="prop-color-solid" />
+                <input type="text" id="prop-color-solid-hex" placeholder="#000000" />
+              </div>
+            </div>
+
+            <div class="gradient-color-controls" id="gradient-color-view" style="display: none;">
+              <div class="gradient-stops">
+                <div class="gradient-stop">
+                  <span>Start:</span>
+                  <input type="color" id="prop-gradient-color-1" value="#2563EB" />
+                </div>
+                <div class="gradient-stop">
+                  <span>End:</span>
+                  <input type="color" id="prop-gradient-color-2" value="#7C3AED" />
+                </div>
+              </div>
+              <div class="property-item" style="margin-top: 10px;">
+                <span class="item-label">Direction (Angle)</span>
+                <input type="range" id="prop-gradient-angle" min="0" max="360" value="90" class="slider-classic" />
+                <span id="gradient-angle-val" style="font-size: 11px; margin-left: 5px;">90°</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 5: Text Effects (Stroke, Shadows) -->
+          <div class="property-section">
+            <label class="section-label">Effects</label>
+            
+            <!-- Text Shadow Effect Toggle -->
+            <div class="effect-header-group">
+              <span class="effect-title">Drop Shadow</span>
+              <label class="switch-small">
+                <input type="checkbox" id="effect-shadow-enabled" />
+                <span class="slider-round"></span>
+              </label>
+            </div>
+            <div class="effect-parameters-container" id="shadow-params" style="display: none;">
+              <div class="effect-grid">
+                <div class="coord-field">
+                  <span>Offset X</span>
+                  <input type="number" id="prop-shadow-x" value="2" />
+                </div>
+                <div class="coord-field">
+                  <span>Offset Y</span>
+                  <input type="number" id="prop-shadow-y" value="2" />
+                </div>
+                <div class="coord-field">
+                  <span>Blur</span>
+                  <input type="number" id="prop-shadow-blur" min="0" value="4" />
+                </div>
+              </div>
+              <div class="color-picker-wrapper" style="margin-top: 5px;">
+                <input type="color" id="prop-shadow-color" value="#000000" />
+                <span style="font-size: 11px;">Shadow Color</span>
+              </div>
+            </div>
+
+            <div class="pane-separator-thin"></div>
+
+            <!-- Text Stroke Effect Toggle -->
+            <div class="effect-header-group">
+              <span class="effect-title">Text Border (Stroke)</span>
+              <label class="switch-small">
+                <input type="checkbox" id="effect-stroke-enabled" />
+                <span class="slider-round"></span>
+              </label>
+            </div>
+            <div class="effect-parameters-container" id="stroke-params" style="display: none;">
+              <div class="input-inline-group">
+                <label for="prop-stroke-width">Width (px):</label>
+                <input type="number" id="prop-stroke-width" min="1" max="15" value="1" />
+              </div>
+              <div class="color-picker-wrapper" style="margin-top: 5px;">
+                <input type="color" id="prop-stroke-color" value="#000000" />
+                <span style="font-size: 11px;">Stroke Color</span>
+              </div>
+            </div>
+
+            <div class="pane-separator-thin"></div>
+
+            <!-- Text Glow Effect Toggle -->
+            <div class="effect-header-group">
+              <span class="effect-title">Outer Glow</span>
+              <label class="switch-small">
+                <input type="checkbox" id="effect-glow-enabled" />
+                <span class="slider-round"></span>
+              </label>
+            </div>
+            <div class="effect-parameters-container" id="glow-params" style="display: none;">
+              <div class="input-inline-group">
+                <label for="prop-glow-radius">Glow Radius:</label>
+                <input type="number" id="prop-glow-radius" min="1" max="50" value="10" />
+              </div>
+              <div class="color-picker-wrapper" style="margin-top: 5px;">
+                <input type="color" id="prop-glow-color" value="#06B6D4" />
+                <span style="font-size: 11px;">Glow Color</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 6: Quick Layer Actions -->
+          <div class="property-section layer-shortcuts">
+            <button id="prop-layer-duplicate" class="btn btn-secondary" title="Duplicate Layer"><i class="fa-solid fa-copy"></i> Duplicate</button>
+            <button id="prop-layer-delete" class="btn btn-danger" title="Delete Layer"><i class="fa-solid fa-trash"></i> Delete</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Bulk Certificate Dashboard Overlay (Modal Mode) -->
+    <div class="modal-backdrop" id="bulk-dashboard-modal" style="display: none;">
+      <div class="modal-card modal-large">
+        <div class="modal-header">
+          <div class="header-title-group">
+            <i class="fa-solid fa-chart-pie dashboard-icon"></i>
+            <h2>Bulk Generator Dashboard</h2>
+          </div>
+          <button id="btn-close-bulk" class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body dashboard-grid">
+          
+          <!-- Column 1: Stats summary -->
+          <div class="dashboard-stats-col">
+            <div class="dashboard-progress-widget">
+              <!-- Radial/Circular progress wrapper -->
+              <div class="radial-progress-container">
+                <svg viewBox="0 0 100 100" class="radial-progress-svg">
+                  <circle cx="50" cy="50" r="40" class="circle-bg" />
+                  <circle cx="50" cy="50" r="40" class="circle-fg" id="dashboard-radial-progress" style="stroke-dashoffset: 251.2;" />
+                </svg>
+                <div class="radial-text">
+                  <span id="bulk-radial-pct">0%</span>
+                  <label>Complete</label>
+                </div>
+              </div>
+              <div class="progress-details-row">
+                <span id="bulk-current-progress-count">0 / 0</span>
+                <span class="eta-lbl" id="bulk-eta-display">ETA: --m --s</span>
+              </div>
+            </div>
+
+            <!-- Stats cards -->
+            <div class="status-grid">
+              <div class="stats-card">
+                <label>Total Records</label>
+                <span id="dashboard-total-records">0</span>
+              </div>
+              <div class="stats-card success">
+                <label>Successful</label>
+                <span id="dashboard-success-count">0</span>
+              </div>
+              <div class="stats-card error">
+                <label>Failed Records</label>
+                <span id="dashboard-failed-count">0</span>
+              </div>
+              <div class="stats-card speed">
+                <label>Generation Speed</label>
+                <span id="dashboard-speed-count">0/s</span>
+              </div>
+            </div>
+            
+            <!-- Controls card -->
+            <div class="bulk-execution-controls">
+              <button id="btn-bulk-pause" class="btn btn-secondary btn-half" style="display: none;"><i class="fa-solid fa-pause"></i> Pause</button>
+              <button id="btn-bulk-resume" class="btn btn-primary btn-half" style="display: none;"><i class="fa-solid fa-play"></i> Resume</button>
+              <button id="btn-bulk-cancel" class="btn btn-danger btn-half" style="display: none;"><i class="fa-solid fa-circle-stop"></i> Cancel</button>
+              <button id="btn-bulk-start" class="btn btn-success btn-full"><i class="fa-solid fa-rocket"></i> Start Generation Run</button>
+            </div>
+          </div>
+
+          <!-- Column 2: Logging & Output options -->
+          <div class="dashboard-output-col">
+            <div class="output-settings-box">
+              <h3>Bulk Export Operations</h3>
+              <div class="export-options-grid">
+                <button class="export-widget-btn" id="bulk-btn-zip-png" disabled>
+                  <i class="fa-solid fa-file-zipper"></i>
+                  <span>ZIP of PNGs</span>
+                </button>
+                <button class="export-widget-btn" id="bulk-btn-zip-jpg" disabled>
+                  <i class="fa-solid fa-file-zipper"></i>
+                  <span>ZIP of JPGs</span>
+                </button>
+                <button class="export-widget-btn" id="bulk-btn-zip-pdf" disabled>
+                  <i class="fa-solid fa-file-zipper"></i>
+                  <span>ZIP of PDFs</span>
+                </button>
+                <button class="export-widget-btn" id="bulk-btn-combined-pdf" disabled>
+                  <i class="fa-solid fa-file-pdf"></i>
+                  <span>Combined PDF</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Logger Console Console -->
+            <div class="console-box">
+              <div class="console-header">
+                <span>Execution Logs & Messages</span>
+                <div class="console-actions">
+                  <button id="btn-clear-console" title="Clear Console"><i class="fa-solid fa-trash-can"></i></button>
+                  <button id="btn-download-error-report" title="Download Detailed Error Report" disabled class="btn-text-danger"><i class="fa-solid fa-file-shield"></i> Error Report</button>
+                </div>
+              </div>
+              <div class="console-output" id="bulk-console-output">
+                <div class="log-line info">Dashboard initialized. Upload CSV and map headers to start generation.</div>
+              </div>
+            </div>
+
+            <!-- Failed Records Box -->
+            <div class="failed-records-box" id="failed-records-container" style="display: none;">
+              <div class="failed-header">
+                <h3>Failed Records (<span id="failed-records-badge">0</span>)</h3>
+                <button class="btn btn-small btn-secondary" id="btn-reprocess-failed"><i class="fa-solid fa-rotate-right"></i> Reprocess Failures</button>
+              </div>
+              <div class="failed-list" id="failed-records-list">
+                <!-- dynamically loaded fails -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="modal-backdrop" id="shortcuts-modal" style="display: none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>Keyboard Shortcuts</h2>
+          <button id="btn-close-shortcuts" class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="shortcut-list">
+            <div class="shortcut-item">
+              <span class="key-combo"><kbd>Ctrl</kbd> + <kbd>Z</kbd></span>
+              <span class="action-desc">Undo last layout action</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key-combo"><kbd>Ctrl</kbd> + <kbd>Y</kbd></span>
+              <span class="action-desc">Redo last layout action</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key-combo"><kbd>Delete</kbd> / <kbd>Backspace</kbd></span>
+              <span class="action-desc">Delete currently selected text layer</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key-combo"><kbd>Ctrl</kbd> + <kbd>D</kbd></span>
+              <span class="action-desc">Duplicate currently selected layer</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key-combo"><kbd>&larr;</kbd> <kbd>&uarr;</kbd> <kbd>&rarr;</kbd> <kbd>&darr;</kbd></span>
+              <span class="action-desc">Nudge selected layer by 0.1% position</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key-combo"><kbd>Shift</kbd> + Arrows</span>
+              <span class="action-desc">Nudge selected layer by 1.0% position</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key-combo"><kbd>Esc</kbd></span>
+              <span class="action-desc">Deselect active layer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modern Sticky Footer -->
+    <footer class="footer">
+      <div class="footer-left">
+        <span class="copyright">&copy; 2026 Ashad. All Rights Reserved.</span>
+        <span class="powered-by">Powered by Muhammed Ashad K</span>
+      </div>
+      <div class="footer-center">
+        <span class="app-version">v2.0.4 Premium Enterprise</span>
+      </div>
+      <div class="footer-right">
+        <a href="https://github.com/MuhammedAshadK" target="_blank" class="social-link" title="GitHub Profile">
+          <i class="fa-brands fa-github"></i>
+        </a>
+        <a href="https://linkedin.com/in/muhammedashadk" target="_blank" class="social-link" title="LinkedIn Connection">
+          <i class="fa-brands fa-linkedin"></i>
+        </a>
+        <a href="#" class="social-link" title="Contact Support">
+          <i class="fa-solid fa-headset"></i>
+        </a>
+      </div>
+    </footer>
+
+    <script src="assets/script.js"></script>
+  </body>
+</html>
